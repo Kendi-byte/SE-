@@ -2,7 +2,7 @@
 session_start();
 require_once __DIR__ . '/config/db.php';
 
-// Access control
+// Access control: Landlord only
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Landlord') {
     header("Location: dashboard.php");
     exit();
@@ -33,7 +33,11 @@ require_once __DIR__ . '/includes/header.php';
     <h2>Tenant Management</h2>
     <?php echo $message; ?>
 
-    <a href="add_tenant.php" class="btn-action" style="margin-bottom: 15px;">+ Add New Tenant</a>
+    <!-- Navigation & Action Buttons -->
+    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+        <a href="add_tenant.php" class="btn-action">+ Add New Tenant</a>
+        <a href="dashboard.php" class="btn-action btn-secondary">← Back to Dashboard</a>
+    </div>
 
     <?php if (count($tenants) > 0): ?>
         <table class="data-table">

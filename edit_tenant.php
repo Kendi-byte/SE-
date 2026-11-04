@@ -1,90 +1,107 @@
 <?php
-require_once 'db.php';
+session_start();
+require_once __DIR__ . '/config/db.php';
 
-if (isset($_POST['add_tenant'])) {
+// Access control
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Landlord') {
+    header("Location: dashboard.php");
+    exit();
+}
 
-    $full_name = trim($_POST['full_name']);
-    $username = trim($_POST['username']);
-    $email = trim($_POST['email']);
-    $phone_no = trim($_POST['phone_no']);
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $house_number = trim($_POST['house_number']);
-    $rent = $_POST['expected_monthly_rent'];
+$error = '';
+$tenant_id = (int)($_GET['id'] ?? 0);
 
-    try {
-        $conn->beginTransaction();
+// Fetch existing details
+$stmt = $pdo->prepare("
+    SELECT t.tenant_id, t.house_number, t.expected_monthly_rent,
+           u.user_id, u.full_name, u.email, u.phone_no
+    FROM tenant t
+    JOIN users u ON t.user_id = u.user_id
+    WHERE t.tenant_id = ? AND t.is_active = 1
+");
+$stmt->execute([$tenant_id]);
+$tenant = $stmt->fetch();
 
-        $sql = "INSERT INTO users
-                (username, password_hash, full_name, email, phone_no, role)
-                VALUES (?, ?, ?, ?, ?, 'Tenant')";
+if (!$tenant) {
+    header("Location: tenants_list.php");
+    exit();
+}
 
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([
-            $username, $password, $full_name,
-            $email, $phone_no
-        ]);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_tenant'])) {
+    $full_name    = trim($_POST['full_name'] ?? '');
+    $email        = trim($_POST['email'] ?? '');
+    $phone_no     = trim($_POST['phone_no'] ?? '');
+    $house_number = trim($_POST['house_number'] ?? '');
+    $rent         = trim($_POST['expected_monthly_rent'] ?? '');
 
-        $user_id = $conn->lastInsertId();
+    if (!empty($full_name) && !empty($email) && !empty($house_number) && !empty($rent)) {
+        try {
+            $pdo->beginTransaction();
 
-        $sql = "INSERT INTO tenant
-                (user_id, house_number, expected_monthly_rent)
-                VALUES (?, ?, ?)";
+            // Update users table
+            $upUser = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, phone_no = ? WHERE user_id = ?");
+            $upUser->execute([$full_name, $email, $phone_no, $tenant['user_id']]);
 
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([$user_id, $house_number, $rent]);
+            // Update tenant table
+            $upTenant = $pdo->prepare("UPDATE tenant SET house_number = ?, expected_monthly_rent = ? WHERE tenant_id = ?");
+            $upTenant->execute([$house_number, $rent, $tenant_id]);
 
-        $conn->commit();
+            $pdo->commit();
 
-        header("Location: tenants.php");
-        exit();
-
-    } catch (PDOException $e) {
-        $conn->rollBack();
-        $error = "Unable to register tenant. Check whether the username or email already exists.";
+            $_SESSION['flash'] = "<div class='success-box'>Tenant details updated successfully!</div>";
+            header("Location: tenants_list.php");
+            exit();
+        } catch (PDOException $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            $error = "Error updating tenant details.";
+        }
+    } else {
+        $error = "Please fill in all required fields.";
     }
 }
+
+$pageTitle = "Edit Tenant";
+require_once __DIR__ . '/includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Tenant</title>
-</head>
-<body>
+<div class="card">
+    <h2>Edit Tenant Details</h2>
 
-<h2>Register New Tenant</h2>
+    <?php if (!empty($error)): ?>
+        <div class="error-box"><?php echo htmlspecialchars($error); ?></div>
+    <?php endif; ?>
 
-<?php if (isset($error)) echo "<p>$error</p>"; ?>
+    <form action="edit_tenant.php?id=<?php echo $tenant_id; ?>" method="POST">
+        <div class="form-group">
+            <label for="full_name">Full Name:</label>
+            <input type="text" id="full_name" name="full_name" value="<?php echo htmlspecialchars($tenant['full_name']); ?>" required>
+        </div>
 
-<form method="POST">
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($tenant['email']); ?>" required>
+        </div>
 
-    Full Name:
-    <input type="text" name="full_name" required><br><br>
+        <div class="form-group">
+            <label for="phone_no">Phone Number:</label>
+            <input type="text" id="phone_no" name="phone_no" value="<?php echo htmlspecialchars($tenant['phone_no'] ?? ''); ?>">
+        </div>
 
-    Username:
-    <input type="text" name="username" required><br><br>
+        <div class="form-group">
+            <label for="house_number">House Number:</label>
+            <input type="text" id="house_number" name="house_number" value="<?php echo htmlspecialchars($tenant['house_number']); ?>" required>
+        </div>
 
-    Email:
-    <input type="email" name="email" required><br><br>
+        <div class="form-group">
+            <label for="expected_monthly_rent">Expected Monthly Rent:</label>
+            <input type="number" id="expected_monthly_rent" name="expected_monthly_rent" min="0" step="0.01" value="<?php echo htmlspecialchars($tenant['expected_monthly_rent']); ?>" required>
+        </div>
 
-    Phone Number:
-    <input type="text" name="phone_no"><br><br>
+        <button type="submit" name="update_tenant" class="btn-action">Update Tenant</button>
+        <a href="tenants_list.php" class="btn-action btn-secondary">Cancel</a>
+    </form>
+</div>
 
-    Password:
-    <input type="password" name="password" required><br><br>
-
-    House Number:
-    <input type="text" name="house_number" required><br><br>
-
-    Expected Monthly Rent:
-    <input type="number" name="expected_monthly_rent"
-           min="0" step="0.01" required><br><br>
-
-    <button type="submit" name="add_tenant">Register Tenant</button>
-
-</form>
-
-<a href="tenants.php">Back</a>
-
-</body>
-</html>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

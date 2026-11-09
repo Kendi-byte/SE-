@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/recalculate_balance.php';
 
 // Access control
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Landlord') {
@@ -43,11 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $updatePay = $pdo->prepare("UPDATE payment SET status = 'Confirmed', confirmation_timestamp = NOW(), confirmed_by = ? WHERE payment_id = ? AND status = 'Pending'");
                 $updatePay->execute([$_SESSION['user_id'], $payment_id]);
 
-                // Update balance record
-                $updateBal = $pdo->prepare("UPDATE balance_record SET total_paid = total_paid + ? WHERE tenant_id = ?");
-                $updateBal->execute([$payment['amount_paid'], $payment['tenant_id']]);
+                // Recalculate balance from confirmed payments + rent charges
+                  recalculateBalance($pdo, (int)$payment['tenant_id']);
 
-                $pdo->commit();
+                   $pdo->commit();
 
                 // Redirect so refreshing the page doesn't resubmit
                 $_SESSION['flash'] = "<div class='success-box'>Payment successfully confirmed! Outstanding balance updated.</div>";

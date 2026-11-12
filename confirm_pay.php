@@ -115,5 +115,8 @@ require_once __DIR__ . '/includes/header.php';
         <p>No pending payments to confirm.</p>
     <?php endif; ?>
 </div>
+<div class="card-footer-actions">
+    <a href="dashboard.php" class="btn-action btn-secondary">Back</a>
+</div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

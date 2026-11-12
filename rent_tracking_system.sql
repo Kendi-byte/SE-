@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 27, 2026 at 01:37 PM
+-- Generation Time: Nov 12, 2026 at 07:56 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -36,6 +36,16 @@ CREATE TABLE `balance_record` (
   `last_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ;
 
+--
+-- Dumping data for table `balance_record`
+--
+
+INSERT INTO `balance_record` (`balance_id`, `tenant_id`, `total_rent_due`, `total_paid`, `last_updated`) VALUES
+(1, 1, 44000.00, 5000.00, '2026-11-11 10:28:54'),
+(2, 2, 600000.00, 20000.00, '2026-11-11 10:28:54'),
+(4, 3, 35000.00, 150000.00, '2026-11-11 10:28:54'),
+(6, 4, 20000.00, 16000.00, '2026-11-11 10:28:54');
+
 -- --------------------------------------------------------
 
 --
@@ -52,6 +62,16 @@ CREATE TABLE `payment` (
   `confirmation_timestamp` timestamp NULL DEFAULT NULL,
   `confirmed_by` int(11) DEFAULT NULL
 ) ;
+
+--
+-- Dumping data for table `payment`
+--
+
+INSERT INTO `payment` (`payment_id`, `tenant_id`, `amount_paid`, `payment_date`, `status`, `recorded_at`, `confirmation_timestamp`, `confirmed_by`) VALUES
+(1, 1, 5000.00, '2020-03-02', 'Confirmed', '2026-11-04 06:13:59', '2026-11-04 06:14:12', 2),
+(2, 2, 20000.00, '2006-02-22', 'Confirmed', '2026-11-09 15:53:57', '2026-11-09 15:54:09', 2),
+(3, 3, 150000.00, '2026-03-30', 'Confirmed', '2026-11-11 10:12:20', '2026-11-11 10:12:51', 2),
+(4, 4, 16000.00, '2026-03-24', 'Confirmed', '2026-11-11 10:19:59', '2026-11-11 10:20:09', 2);
 
 --
 -- Triggers `payment`
@@ -87,6 +107,16 @@ CREATE TABLE `rent_charge` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ;
 
+--
+-- Dumping data for table `rent_charge`
+--
+
+INSERT INTO `rent_charge` (`charge_id`, `tenant_id`, `billing_month`, `amount`, `created_at`) VALUES
+(1, 1, '2026-11-01', 22000.00, '2026-11-11 10:28:54'),
+(2, 2, '2026-11-01', 300000.00, '2026-11-11 10:28:54'),
+(3, 3, '2026-11-01', 35000.00, '2026-11-11 10:28:54'),
+(4, 4, '2026-11-01', 20000.00, '2026-11-11 10:28:54');
+
 -- --------------------------------------------------------
 
 --
@@ -100,6 +130,16 @@ CREATE TABLE `tenant` (
   `expected_monthly_rent` decimal(10,2) NOT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1
 ) ;
+
+--
+-- Dumping data for table `tenant`
+--
+
+INSERT INTO `tenant` (`tenant_id`, `user_id`, `house_number`, `expected_monthly_rent`, `is_active`) VALUES
+(1, 3, '21', 22000.00, 1),
+(2, 4, '12', 300000.00, 1),
+(3, 5, '44', 35000.00, 1),
+(4, 6, '33', 20000.00, 1);
 
 --
 -- Triggers `tenant`
@@ -133,7 +173,11 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `username`, `password_hash`, `full_name`, `email`, `phone_no`, `role`, `created_at`) VALUES
-(2, 'landlord1', '$2y$10$hqPKOP5TPXv.xc1YGSv3b.66xJp0SmDbL1tfmIaVkBMoxFGpTQ0nW', 'Mwenda Neema', 'simplynk@gmail.com', '0712345678', 'Landlord', '2026-10-27 12:06:56');
+(2, 'landlord1', '$2y$10$hqPKOP5TPXv.xc1YGSv3b.66xJp0SmDbL1tfmIaVkBMoxFGpTQ0nW', 'Mwenda Neema', 'simplynk@gmail.com', '0712345678', 'Landlord', '2026-10-27 12:06:56'),
+(3, 'pmwenda', '$2y$10$CEAex1Mp14Q2HHTk88K/U.sKr2u9ekWmykU70ZpV5YjS4wgyawt.y', 'Philemon', 'pmwenda@strathmore.edu', '0100187532', 'Tenant', '2026-11-04 05:54:17'),
+(4, 'tallman', '$2y$10$wDIvojAvPM76QajdGgZ0DOWqFpMpkBydj1IwZaXCRZ97mrS63roqW', 'Viktor Wemby', 'wembyv@gmail.com', '0112345678', 'Tenant', '2026-11-09 15:53:22'),
+(5, 'lh44', '$2y$10$/CeL1hq/S2KoZgimL3fTOOws6PPUxhB1IaVXECxivu6Oke7HKP8aa', 'Lewis Hamilton', 'lh44@gmail.com', '0112345489', 'Tenant', '2026-11-11 10:11:55'),
+(6, 'estiebestie', '$2y$10$www/SPfUJjV1Sj4898JrNOZ6Ry2hWRiBmJJNaQj6T5dFlCXVxfnvG', 'Estban Ocon', 'ec@gmail.com', '010018746', 'Tenant', '2026-11-11 10:19:26');
 
 -- --------------------------------------------------------
 
@@ -260,7 +304,7 @@ ALTER TABLE `tenant`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables

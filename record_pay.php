@@ -94,7 +94,12 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <button type="submit" class="btn-action">Record Payment</button>
+        
     </form>
+    
+</div>
+<div class="card-footer-actions">
+    <a href="dashboard.php" class="btn-action btn-secondary">Back</a>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

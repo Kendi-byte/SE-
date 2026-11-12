@@ -33,10 +33,8 @@ require_once __DIR__ . '/includes/header.php';
     <h2>Tenant Management</h2>
     <?php echo $message; ?>
 
-    <!-- Navigation & Action Buttons -->
-    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+    <div style="margin-bottom: 20px;">
         <a href="add_tenant.php" class="btn-action">+ Add New Tenant</a>
-        <a href="dashboard.php" class="btn-action btn-secondary">← Back to Dashboard</a>
     </div>
 
     <?php if (count($tenants) > 0): ?>
@@ -65,7 +63,7 @@ require_once __DIR__ . '/includes/header.php';
                         <a href="edit_tenant.php?id=<?php echo (int)$tenant['tenant_id']; ?>" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 12px;">Edit</a>
                         <a href="delete_tenant.php?id=<?php echo (int)$tenant['tenant_id']; ?>" 
                            onclick="return confirm('Are you sure you want to remove this tenant?');" 
-                           class="btn-action" style="background-color: #d9534f; padding: 4px 8px; font-size: 12px;">Remove</a>
+                           class="btn-action" style="background-color: #a83232; padding: 4px 8px; font-size: 12px;">Remove</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -74,6 +72,11 @@ require_once __DIR__ . '/includes/header.php';
     <?php else: ?>
         <p>No active tenants found.</p>
     <?php endif; ?>
+
+    <!-- Bottom Right Back Button -->
+    <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <a href="dashboard.php" class="btn-action btn-secondary" style="margin-right: 0;">Back</a>
+    </div>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

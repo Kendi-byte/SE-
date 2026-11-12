@@ -8,6 +8,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Landlord') {
     exit();
 }
 
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 $message = '';
 if (isset($_SESSION['flash'])) {
     $message = $_SESSION['flash'];
@@ -34,7 +38,7 @@ require_once __DIR__ . '/includes/header.php';
     <?php echo $message; ?>
 
     <div style="margin-bottom: 20px;">
-        <a href="add_tenant.php" class="btn-action">+ Add New Tenant</a>
+        <a href="add_tenant.php" class="btn-action">Add New Tenant</a>
     </div>
 
     <?php if (count($tenants) > 0): ?>
@@ -61,9 +65,12 @@ require_once __DIR__ . '/includes/header.php';
                     <td><?php echo number_format($tenant['expected_monthly_rent'], 2); ?></td>
                     <td>
                         <a href="edit_tenant.php?id=<?php echo (int)$tenant['tenant_id']; ?>" class="btn-action btn-secondary" style="padding: 4px 8px; font-size: 12px;">Edit</a>
-                        <a href="delete_tenant.php?id=<?php echo (int)$tenant['tenant_id']; ?>" 
-                           onclick="return confirm('Are you sure you want to remove this tenant?');" 
-                           class="btn-action" style="background-color: #a83232; padding: 4px 8px; font-size: 12px;">Remove</a>
+                        <form action="delete_tenant.php" method="POST" style="display:inline;"
+                              onsubmit="return confirm('Are you sure you want to remove this tenant?');">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                            <input type="hidden" name="id" value="<?php echo (int)$tenant['tenant_id']; ?>">
+                            <button type="submit" class="btn-action" style="background-color: #a83232; padding: 4px 8px; font-size: 12px; border: none; cursor: pointer;">Remove</button>
+                        </form>
                     </td>
                 </tr>
                 <?php endforeach; ?>

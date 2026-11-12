@@ -8,9 +8,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Landlord') {
     exit();
 }
 
-if (isset($_GET['id'])) {
-    $tenant_id = (int) $_GET['id'];
+// Only accept POST with a valid CSRF token (a plain link can no longer delete anything)
+if ($_SERVER['REQUEST_METHOD'] !== 'POST'
+    || empty($_SESSION['csrf_token'])
+    || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+    $_SESSION['flash'] = "<div class='error-box'>Invalid request.</div>";
+    header("Location: tenants_list.php");
+    exit();
+}
 
+$tenant_id = filter_var($_POST['id'] ?? '', FILTER_VALIDATE_INT);
+
+if ($tenant_id) {
     try {
         // Soft delete: set is_active = 0 to retain payment audit trails
         $stmt = $pdo->prepare("UPDATE tenant SET is_active = 0 WHERE tenant_id = ?");
@@ -24,4 +33,3 @@ if (isset($_GET['id'])) {
 
 header("Location: tenants_list.php");
 exit();
-?>

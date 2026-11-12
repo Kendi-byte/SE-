@@ -34,7 +34,7 @@ require_once __DIR__ . '/includes/header.php';
     <?php echo $message; ?>
 
     <div style="margin-bottom: 20px;">
-        <a href="generate_monthly_rent.php" class="btn-action">+ Generate Monthly Rent</a>
+        <a href="generate_charges.php" class="btn-action">Generate Monthly Rent Report</a>
     </div>
 
     <?php if (count($reports) > 0): ?>
@@ -78,10 +78,10 @@ require_once __DIR__ . '/includes/header.php';
         <p>No tenant records found.</p>
     <?php endif; ?>
 
-    <!-- Bottom Right Back Button -->
+    
+</div>
+<!-- Bottom Right Back Button -->
     <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
         <a href="dashboard.php" class="btn-action btn-secondary" style="margin-right: 0;">Back</a>
     </div>
-</div>
-
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

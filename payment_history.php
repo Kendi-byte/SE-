@@ -28,10 +28,6 @@ require_once __DIR__ . '/includes/header.php';
     <h2>My Payment History</h2>
     <p style="margin-bottom: 20px; color: #555;">Record of all payments submitted and their verification status.</p>
 
-    <div style="margin-bottom: 20px;">
-        <a href="dashboard.php" class="btn-action btn-secondary">← Back to Dashboard</a>
-    </div>
-
     <?php if (count($payments) > 0): ?>
         <table class="data-table">
             <thead>
@@ -64,6 +60,9 @@ require_once __DIR__ . '/includes/header.php';
     <?php else: ?>
         <p>No payment records found.</p>
     <?php endif; ?>
+    <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <a href="dashboard.php" class="btn-action btn-secondary" style="margin-right: 0;">Back</a>
+    </div>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

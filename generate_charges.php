@@ -36,7 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
 
-            $tenants = $pdo->query("SELECT tenant_id, expected_monthly_rent FROM tenant WHERE is_active = 1")->fetchAll();
+            // Only tenants who had moved in by the END of the billing month are charged for it
+            $tq = $pdo->prepare("SELECT tenant_id, expected_monthly_rent FROM tenant
+                                 WHERE is_active = 1 AND move_in_date <= LAST_DAY(?)");
+            $tq->execute([$billing_month]);
+            $tenants = $tq->fetchAll();
+
+            $activeCount = (int) $pdo->query("SELECT COUNT(*) FROM tenant WHERE is_active = 1")->fetchColumn();
+            $skipped = $activeCount - count($tenants);
 
             // INSERT IGNORE + unique key (tenant_id, billing_month) = no duplicate charges
             $ins = $pdo->prepare("INSERT IGNORE INTO rent_charge (tenant_id, billing_month, amount) VALUES (?, ?, ?)");
@@ -51,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
 
             $_SESSION['flash'] = "<div class='success-box'>Rent charges for " . htmlspecialchars($d->format('F Y')) .
-                                 " generated. New charges added: $added.</div>";
+                     " generated. New charges added: $added.</div>";
             header("Location: generate_charges.php");
             exit();
         } catch (PDOException $e) {
@@ -83,7 +90,7 @@ require_once __DIR__ . '/includes/header.php';
                    max="<?php echo date('Y-m'); ?>" value="<?php echo date('Y-m'); ?>" required>
         </div>
         <button type="submit" class="btn-action">Generate Charges</button>
-        <a href="dashboard.php" class="btn-action btn-secondary">← Back to Dashboard</a>
+        
     </form>
 </div>
 
@@ -119,6 +126,9 @@ require_once __DIR__ . '/includes/header.php';
     <?php else: ?>
         <p>No active tenants found.</p>
     <?php endif; ?>
+    <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <a href="dashboard.php" class="btn-action btn-secondary" style="margin-right: 0;">Back</a>
+    </div>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

@@ -19,8 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_tenant'])) {
     $password     = trim($_POST['password'] ?? '');
     $house_number = trim($_POST['house_number'] ?? '');
     $rent         = trim($_POST['expected_monthly_rent'] ?? '');
+    $move_in_date = trim($_POST['move_in_date'] ?? '');
 
-    if (!empty($full_name) && !empty($username) && !empty($email) && !empty($password) && !empty($house_number) && !empty($rent)) {
+    // Move-in date must be a real date (rent is only charged from this month onward)
+    $dm = DateTime::createFromFormat('Y-m-d', $move_in_date);
+    $validMoveIn = $dm && $dm->format('Y-m-d') === $move_in_date;
+
+    if (!empty($full_name) && !empty($username) && !empty($email) && !empty($password) && !empty($house_number) && !empty($rent) && $validMoveIn) {
         try {
             $pdo->beginTransaction();
 
@@ -35,10 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_tenant'])) {
             $user_id = $pdo->lastInsertId();
 
             // 2. Insert into tenant table
-            $sqlTenant = "INSERT INTO tenant (user_id, house_number, expected_monthly_rent) 
-                          VALUES (?, ?, ?)";
+            $sqlTenant = "INSERT INTO tenant (user_id, house_number, expected_monthly_rent, move_in_date) 
+                          VALUES (?, ?, ?, ?)";
             $stmtTenant = $pdo->prepare($sqlTenant);
-            $stmtTenant->execute([$user_id, $house_number, $rent]);
+            $stmtTenant->execute([$user_id, $house_number, $rent, $move_in_date]);
 
             $pdo->commit();
 
@@ -113,8 +118,13 @@ require_once __DIR__ . '/includes/header.php';
                 <input type="number" id="expected_monthly_rent" name="expected_monthly_rent" min="0" step="0.01" required>
             </div>
 
+            <div class="form-group">
+                <label for="move_in_date">Move-in Date:</label>
+                <input type="date" id="move_in_date" name="move_in_date" value="<?php echo date('Y-m-d'); ?>" required>
+            </div>
+
             <button type="submit" name="add_tenant" class="btn-action">Register Tenant</button>
-            <a href="tenants_list.php" class="btn-action btn-secondary">Cancel / Back</a>
+            <a href="tenants_list.php" class="btn-action btn-secondary">Cancel</a>
         </form>
 
     <?php endif; ?>

@@ -28,10 +28,6 @@ require_once __DIR__ . '/includes/header.php';
     <h2>Account Balance Summary</h2>
     <p style="margin-bottom: 20px; color: #555;">Overview of your rent status and balance.</p>
 
-    <div style="margin-bottom: 20px;">
-        <a href="dashboard.php" class="btn-action btn-secondary">← Back to Dashboard</a>
-    </div>
-
     <?php if ($balanceInfo): ?>
         <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
             <p style="margin-bottom: 8px;"><strong>House Number:</strong> <?php echo htmlspecialchars($balanceInfo['house_number']); ?></p>
@@ -57,6 +53,10 @@ require_once __DIR__ . '/includes/header.php';
     <?php else: ?>
         <p>No active balance record found for your account.</p>
     <?php endif; ?>
+
+    <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <a href="dashboard.php" class="btn-action btn-secondary" style="margin-right: 0;">Back</a>
+    </div>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

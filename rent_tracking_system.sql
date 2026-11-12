@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 12, 2026 at 07:56 AM
+-- Generation Time: Nov 12, 2026 at 10:13 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -41,10 +41,11 @@ CREATE TABLE `balance_record` (
 --
 
 INSERT INTO `balance_record` (`balance_id`, `tenant_id`, `total_rent_due`, `total_paid`, `last_updated`) VALUES
-(1, 1, 44000.00, 5000.00, '2026-11-11 10:28:54'),
-(2, 2, 600000.00, 20000.00, '2026-11-11 10:28:54'),
-(4, 3, 35000.00, 150000.00, '2026-11-11 10:28:54'),
-(6, 4, 20000.00, 16000.00, '2026-11-11 10:28:54');
+(1, 1, 22000.00, 5000.00, '2026-11-12 20:21:16'),
+(2, 2, 300000.00, 20000.00, '2026-11-12 20:08:19'),
+(4, 3, 35000.00, 150000.00, '2026-11-12 20:21:16'),
+(6, 4, 20000.00, 16000.00, '2026-11-12 20:21:16'),
+(20, 5, 70000.00, 500.00, '2026-11-12 20:36:06');
 
 -- --------------------------------------------------------
 
@@ -71,7 +72,8 @@ INSERT INTO `payment` (`payment_id`, `tenant_id`, `amount_paid`, `payment_date`,
 (1, 1, 5000.00, '2020-03-02', 'Confirmed', '2026-11-04 06:13:59', '2026-11-04 06:14:12', 2),
 (2, 2, 20000.00, '2006-02-22', 'Confirmed', '2026-11-09 15:53:57', '2026-11-09 15:54:09', 2),
 (3, 3, 150000.00, '2026-03-30', 'Confirmed', '2026-11-11 10:12:20', '2026-11-11 10:12:51', 2),
-(4, 4, 16000.00, '2026-03-24', 'Confirmed', '2026-11-11 10:19:59', '2026-11-11 10:20:09', 2);
+(4, 4, 16000.00, '2026-03-24', 'Confirmed', '2026-11-11 10:19:59', '2026-11-11 10:20:09', 2),
+(5, 5, 500.00, '2026-11-12', 'Confirmed', '2026-11-12 20:12:04', '2026-11-12 20:12:18', 2);
 
 --
 -- Triggers `payment`
@@ -115,7 +117,9 @@ INSERT INTO `rent_charge` (`charge_id`, `tenant_id`, `billing_month`, `amount`, 
 (1, 1, '2026-11-01', 22000.00, '2026-11-11 10:28:54'),
 (2, 2, '2026-11-01', 300000.00, '2026-11-11 10:28:54'),
 (3, 3, '2026-11-01', 35000.00, '2026-11-11 10:28:54'),
-(4, 4, '2026-11-01', 20000.00, '2026-11-11 10:28:54');
+(4, 4, '2026-11-01', 20000.00, '2026-11-11 10:28:54'),
+(17, 5, '2026-11-01', 35000.00, '2026-11-12 20:12:42'),
+(20, 5, '2026-10-01', 35000.00, '2026-11-12 20:36:06');
 
 -- --------------------------------------------------------
 
@@ -128,6 +132,7 @@ CREATE TABLE `tenant` (
   `user_id` int(11) NOT NULL,
   `house_number` varchar(20) NOT NULL,
   `expected_monthly_rent` decimal(10,2) NOT NULL,
+  `move_in_date` date NOT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1
 ) ;
 
@@ -135,11 +140,12 @@ CREATE TABLE `tenant` (
 -- Dumping data for table `tenant`
 --
 
-INSERT INTO `tenant` (`tenant_id`, `user_id`, `house_number`, `expected_monthly_rent`, `is_active`) VALUES
-(1, 3, '21', 22000.00, 1),
-(2, 4, '12', 300000.00, 1),
-(3, 5, '44', 35000.00, 1),
-(4, 6, '33', 20000.00, 1);
+INSERT INTO `tenant` (`tenant_id`, `user_id`, `house_number`, `expected_monthly_rent`, `move_in_date`, `is_active`) VALUES
+(1, 3, '21', 22000.00, '2026-11-12', 0),
+(2, 4, '12', 300000.00, '2026-11-12', 0),
+(3, 5, '44', 35000.00, '2026-11-12', 0),
+(4, 6, '33', 20000.00, '2026-11-12', 0),
+(5, 7, '12', 35000.00, '2026-10-12', 1);
 
 --
 -- Triggers `tenant`
@@ -148,6 +154,10 @@ DELIMITER $$
 CREATE TRIGGER `trg_tenant_create_balance` AFTER INSERT ON `tenant` FOR EACH ROW BEGIN
   INSERT INTO `balance_record` (`tenant_id`) VALUES (NEW.`tenant_id`);
 END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_tenant_lock_move_in` BEFORE UPDATE ON `tenant` FOR EACH ROW SET NEW.`move_in_date` = IF(OLD.`move_in_date` IS NULL, NEW.`move_in_date`, OLD.`move_in_date`)
 $$
 DELIMITER ;
 
@@ -177,7 +187,8 @@ INSERT INTO `users` (`user_id`, `username`, `password_hash`, `full_name`, `email
 (3, 'pmwenda', '$2y$10$CEAex1Mp14Q2HHTk88K/U.sKr2u9ekWmykU70ZpV5YjS4wgyawt.y', 'Philemon', 'pmwenda@strathmore.edu', '0100187532', 'Tenant', '2026-11-04 05:54:17'),
 (4, 'tallman', '$2y$10$wDIvojAvPM76QajdGgZ0DOWqFpMpkBydj1IwZaXCRZ97mrS63roqW', 'Viktor Wemby', 'wembyv@gmail.com', '0112345678', 'Tenant', '2026-11-09 15:53:22'),
 (5, 'lh44', '$2y$10$/CeL1hq/S2KoZgimL3fTOOws6PPUxhB1IaVXECxivu6Oke7HKP8aa', 'Lewis Hamilton', 'lh44@gmail.com', '0112345489', 'Tenant', '2026-11-11 10:11:55'),
-(6, 'estiebestie', '$2y$10$www/SPfUJjV1Sj4898JrNOZ6Ry2hWRiBmJJNaQj6T5dFlCXVxfnvG', 'Estban Ocon', 'ec@gmail.com', '010018746', 'Tenant', '2026-11-11 10:19:26');
+(6, 'estiebestie', '$2y$10$www/SPfUJjV1Sj4898JrNOZ6Ry2hWRiBmJJNaQj6T5dFlCXVxfnvG', 'Estban Ocon', 'ec@gmail.com', '010018746', 'Tenant', '2026-11-11 10:19:26'),
+(7, 'ka', '$2y$10$qgpzrmWKREIACSSS3L/49OWvkMZ2mYSOQfvwDw6OHcmeUNfGt41aS', 'Kimi', 'kantonelli@gmail.com', '01123567', 'Tenant', '2026-11-12 20:10:17');
 
 -- --------------------------------------------------------
 
@@ -304,7 +315,7 @@ ALTER TABLE `tenant`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Constraints for dumped tables
